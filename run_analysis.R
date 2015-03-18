@@ -55,27 +55,28 @@ load_and_merge_data <- function(){
   y_data[,2] <- activity_names[y_data[,1]]
   
   full_data <- cbind(subject_data,y_data,x_data)
-  colnames(full_data)[1:2] <- c("id","activity")
-  
+  colnames(full_data)[1:3] <- c("id","activity","activity_name")
   full_data
 
  }
 
-filter_mean_and_std <- function(input){
-  search <- grep("-mean|-std", colnames(input))
-  result <- input[,c(1,2,search)]
-  result
+filter_mean_and_std <- function(d){
+  search <- grep("-mean|-std", colnames(d))
+  d[,c(1,2,3,search)]
 }
 
 build_tidy_data <- function(input){
   # Compute the means, grouped by subject/label
-  melted <- melt(input, id.var = c("id", "activity"))
-  result <- dcast(melted , id + activity ~ variable, mean)
+  
+  # dont use the string column within the calculation
+  input$activity <- NULL
+  melted <- melt(input, id.var = c("id", "activity_name"))
+  result <- dcast(melted , id + activity_name ~ variable, mean)
   result
 }
 
 save_data <- function(data,filename){
-  write.table(data, file=filename)
+  write.table(data, file=filename,row.name=FALSE)
 }
 
 run_analysis <- function(){
@@ -83,7 +84,6 @@ run_analysis <- function(){
   merged_data <- load_and_merge_data()
   subset      <- filter_mean_and_std(merged_data)
   tidy_data   <- build_tidy_data(subset)
-  
   save_data(tidy_data,"./data/tidy_data.txt")
   
 }
