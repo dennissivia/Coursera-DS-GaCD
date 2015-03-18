@@ -1,5 +1,6 @@
 library("reshape2")
 
+# Get the raw data: Create data subdir, download raw data and extract it
 get_data <- function(){
   # download the data if the zip does not exist yet
   zip_name <- "getdata_projectfiles_UCI HAR Dataset.zip"
@@ -60,6 +61,7 @@ load_and_merge_data <- function(){
 
  }
 
+# filter all the columns that contain mean or std values
 filter_mean_and_std <- function(d){
   search <- grep("-mean|-std", colnames(d))
   d[,c(1,2,3,search)]
@@ -68,13 +70,16 @@ filter_mean_and_std <- function(d){
 build_tidy_data <- function(input){
   # Compute the means, grouped by subject/label
   
-  # dont use the string column within the calculation
+  # dont use the activity id column
   input$activity <- NULL
+  
+  # calculate the mean of the data grouped by subject(id) and activity-name
   melted <- melt(input, id.var = c("id", "activity_name"))
   result <- dcast(melted , id + activity_name ~ variable, mean)
   result
 }
 
+# save the given data to the given filename
 save_data <- function(data,filename){
   write.table(data, file=filename,row.name=FALSE)
 }
@@ -88,6 +93,6 @@ run_analysis <- function(){
   
 }
 
-
+# main function, that invokes all the sub routines
 run_analysis()
 
